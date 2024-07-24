@@ -1,0 +1,15 @@
+services:
+  bid_capture:
+    build: ./Capture
+    ports:
+      - 5000:5000
+  bid_tracking:
+    build: ./Tracking
+    ports:
+      - 5001:5001
+  bid_analytics:
+    build: ./Analytics
+    ports:
+      - 5002:5002
+  bid_producer:
+    build: ./Producer

@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - app-network
+
+  publisher_subscriber:
+    build:
+      context: ./publisher_subscriber
+    depends_on:
+      - rabbitmq
+    networks:
+      - app-network
+    command: ["sh", "-c", "python bid_producer.py & python bid_consumer_capture.py & python bid_consumer_analytics.py & python bid_consumer_tracking.py"]
+
+  queues:
+    build:
+      context: ./queues
+    depends_on:
+      - rabbitmq
+    networks:
+      - app-network
+    command: ["sh", "-c", "python bid_producer.py & python bid_capture.py & python bid_tracking.py & python bid_analytics.py"]
+
+  rest:
+    build:
+      context: ./REST
+    depends_on:
+      - rabbitmq
+    networks:
+      - app-network
+    command: ["sh", "-c", "python bid_producer.py & python bid_capture.py & python bid_tracking.py & python bid_analytics.py"]
+
+networks:
+  app-network:
+    driver: bridge
