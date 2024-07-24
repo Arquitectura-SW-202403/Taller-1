@@ -5,10 +5,10 @@ FROM python:3.9
 WORKDIR /app
 
 # Copia todos los archivos del directorio actual al contenedor
-COPY . /app
+COPY .. /app
 
 # Instala las dependencias
-RUN pip install pika
+RUN pip install -r ./requirements.txt
 
 # Comando por defecto para ejecutar el script
-CMD ["sh", "-c", "python bid_producer.py & python bid_consumer_capture.py & python bid_consumer_analytics.py & python bid_consumer_tracking.py"]
+CMD ["sh", "-c", "python bid_tracking_sub.py"]
