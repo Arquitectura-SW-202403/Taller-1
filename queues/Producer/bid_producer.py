@@ -3,8 +3,7 @@ import time
 import pika
 import json
 
-# queues_to_send = ['analytics', 'capture', 'tracking']
-queues_to_send = ['tracking']
+queues_to_send = ['analytics', 'capture', 'tracking']
 
 
 def connect():

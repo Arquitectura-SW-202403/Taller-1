@@ -7,14 +7,28 @@ services:
       - 15672:15672
     healthcheck:
       test: rabbitmq-diagnostics -q ping
-      interval: 10s
-      timeout: 10s
+      interval: 20s
+      timeout: 20s
       retries: 3
   tracking:
-    build: ./Analytics
+    build: ./Consumer
     container_name: tracking_queue
     environment:
       RABBIT_QUEUE: tracking
+    depends_on:
+      - producer
+  analytics:
+    build: ./Consumer
+    container_name: analytics_queue
+    environment:
+      RABBIT_QUEUE: analytics
+    depends_on:
+      - producer
+  capture:
+    build: ./Consumer
+    container_name: capture_queue
+    environment:
+      RABBIT_QUEUE: capture
     depends_on:
       - producer
   producer:
