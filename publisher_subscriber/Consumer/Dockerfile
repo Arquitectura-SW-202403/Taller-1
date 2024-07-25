@@ -30,5 +30,7 @@ USER node
 
 # Copy the rest of the source files into the image.
 COPY . .
+
+
 # Run the application.
 CMD node index.js

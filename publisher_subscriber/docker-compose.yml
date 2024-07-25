@@ -1,5 +1,6 @@
 services:
   zookeeper:
+    container_name: zookeeper
     image: confluentinc/cp-zookeeper:latest
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
@@ -8,6 +9,7 @@ services:
       - 2181:2181
 
   kafka_broker:
+    container_name: kafka
     image: confluentinc/cp-kafka:latest
     depends_on:
       - zookeeper
@@ -26,23 +28,52 @@ services:
       interval: 20s
       timeout: 10s
       retries: 5
-  bid_capture_sub:
-    build: ./Capture
+  init-kafka:
+    container_name: init_kafka
+    image: confluentinc/cp-kafka:latest
     depends_on:
       kafka_broker:
         condition: service_healthy
-  bid_tracking_sub:
-    build: ./Tracking
-    depends_on:
-      kafka_broker:
-        condition: service_healthy
-  bid_analytics_sub:
-    build: ./Analytics
-    depends_on:
-      kafka_broker:
-        condition: service_healthy
-  bid_producer_pub:
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      # blocks until kafka is reachable
+      kafka-topics --bootstrap-server kafka_broker:9092 --list
+
+      echo -e 'Creating kafka topics'
+      kafka-topics --bootstrap-server kafka_broker:9092 --create --topic testjs --replication-factor 5 --partitions 8
+
+      echo -e 'Successfully created the following topics:'
+      kafka-topics --bootstrap-server kafka_broker:9092 --list
+      "
+  producer:
+    container_name: bid_producer
     build: ./Producer
     depends_on:
-      kafka_broker:
-        condition: service_healthy
+      init-kafka:
+        condition: service_completed_successfully
+  bid_analytics:
+    container_name: bid_analytics
+    build: ./Consumer
+    environment:
+      - KAFKA_ID=bid_analytics
+    depends_on:
+      init-kafka:
+        condition: service_completed_successfully
+      
+  bid_capture:
+    container_name: bid_capture
+    build: ./Consumer
+    environment:
+      - KAFKA_ID=bid_capture
+    depends_on:
+      init-kafka:
+        condition: service_completed_successfully
+  bid_tracking:
+    container_name: bid_tracking
+    build: ./Consumer
+    environment:
+      - KAFKA_ID=bid_tracking
+    depends_on:
+      init-kafka:
+        condition: service_completed_successfully
