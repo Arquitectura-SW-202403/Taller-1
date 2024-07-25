@@ -1,0 +1,25 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbit
+    ports:
+      - 5672:5672
+      - 15672:15672
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 10s
+      retries: 3
+  tracking:
+    build: ./Analytics
+    container_name: tracking_queue
+    environment:
+      RABBIT_QUEUE: tracking
+    depends_on:
+      - producer
+  producer:
+    container_name: producer_queue
+    build: ./Producer
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
