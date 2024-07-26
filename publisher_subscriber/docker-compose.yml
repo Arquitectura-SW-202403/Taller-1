@@ -43,6 +43,8 @@ services:
       echo -e 'Creating kafka topics'
       kafka-topics --bootstrap-server kafka_broker:9092 --create --topic testjs --replication-factor 5 --partitions 8
 
+      kafka-topics --bootstrap-server kafka_broker:9092 --create --topic jmetertwo --replication-factor 1 --partitions 5
+
       echo -e 'Successfully created the following topics:'
       kafka-topics --bootstrap-server kafka_broker:9092 --list
       "
